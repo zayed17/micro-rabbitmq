@@ -1,18 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-
+interface Event {
+    title: string;
+    date: string;
+    location: string;
+    description: string;
+    createdBy: string
+}
 const Home = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const [events, setEvents] = useState<Event[]>([]);
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
     };
+
+    useEffect(() => {
+        getData()
+    }, [])
+
+    const getData = async () => {
+        try {
+            const response = await axios.get('http://localhost:3001/event')
+            setEvents(response.data)
+            console.log(response.data, 'is gettig or', events)
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
         console.log('Form submitted');
 
-        const formData = new FormData(e.target);
+        const formData = new FormData(e.currentTarget);
         const eventData = {
             title: formData.get('title'),
             date: formData.get('date'),
@@ -22,7 +42,7 @@ const Home = () => {
 
         console.log(eventData, "is getting or not")
         try {
-            const response = await axios.post('http://localhost:3001/event/created', eventData);
+            const response = await axios.post('http://localhost:3001/event/adding', eventData, { withCredentials: true });
             console.log('Event created:', response.data);
             setIsModalOpen(false);
         } catch (error) {
@@ -30,8 +50,17 @@ const Home = () => {
         }
     };
 
+    const handleBookEvent = async(event :Event)=>{
+        try {
+            const response = await axios.post('http://localhost:3001/event/booking', event, { withCredentials: true });
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     return (
-        <section className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+
+        <section className="bg-gray-50 dark:bg-gray-900 min-h-screen ">
             <div className="max-w-3xl mx-auto px-4">
                 <div className="flex justify-between items-center mb-8">
                     <button
@@ -79,14 +108,8 @@ const Home = () => {
                                     <input type="date" name="date" id="price" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="$2999" required />
                                 </div>
                                 <div className="col-span-2 sm:col-span-1">
-                                    <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location</label>
-                                    <select id="category" name='location' defaultValue="" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                        <option disabled value="">Select Location</option>
-                                        <option value="TV">Kerala</option>
-                                        <option value="PC">Tamil Nadu</option>
-                                        <option value="GA">Hydrabad</option>
-                                        <option value="PH">Delhi</option>
-                                    </select>
+                                    <label htmlFor="location" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location</label>
+                                    <input type="text" name="location" id="price" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Location" required />
                                 </div>
                                 <div className="col-span-2">
                                     <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
@@ -98,10 +121,28 @@ const Home = () => {
                                 Add new product
                             </button>
                         </form>
-
                     </div>
                 </div>
             )}
+            <div className="mt-8 flex flex-col items-center">
+                <h2 className="text-2xl text-white font-semibold mb-4 text-center">Events</h2>
+                <ul className="w-full max-w-3xl">
+                    {events.map((event, index) => (
+                        <li key={index} className="border rounded-lg p-4 mb-4 bg-white dark:bg-gray-800 shadow-md w-full">
+                            <h3 className="text-lg text-gray-900 dark:text-white font-semibold">Title: {event.title}</h3>
+                            <p className="text-gray-400">Date: {event.date}</p>
+                            <p className="text-gray-400">Location: {event.location}</p>
+                            <p className="text-gray-400">Description: {event.description}</p>
+                            <p className="text-gray-400">CreatedBy: {event.createdBy}</p>
+                            <p>
+                            <button onClick={()=>handleBookEvent(event)} className="bg-blue-600 text-white font-semibold py-2 px-4 rounded ">
+                                Book Now
+                            </button>
+                            </p> 
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </section>
     );
 };
