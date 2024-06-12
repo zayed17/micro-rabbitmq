@@ -37,13 +37,18 @@ export const eventCreate = async(req:CustomRequest,res:Response)=>{
     }
 }
 
-export const booking = async(req:CustomRequest,res:Response)=>{
+export const booking = async (req: CustomRequest, res: Response) => {
     try {
-        const {_id,createdBy} = req.body
-        await produceBooking({_id,createdBy})
-        console.log(req.body,"booking")
+        const { _id, createdBy } = req.body;
+
+        await produceBooking({ _id, createdBy });
+
+        await Event.findOneAndUpdate({ _id }, { booked: true });
+
+        res.status(200).json({ ok: true });
     } catch (error) {
-     console.log(error)   
+        console.error('Error in booking:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-}
+};
 

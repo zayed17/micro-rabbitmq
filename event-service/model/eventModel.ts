@@ -5,7 +5,8 @@ interface EventDocument extends Document{
     description:string,
     date:Date,
     location:string,
-    createdBy:string;
+    createdBy:string,
+    booked:boolean
 }
 
 const EventSchema = new Schema<EventDocument>({
@@ -14,6 +15,7 @@ const EventSchema = new Schema<EventDocument>({
   date: { type: Date, required: true },
   location: { type: String, required: true },
   createdBy: { type: String, ref: 'UserData', required: true }, 
+  booked:{type:Boolean,default:false}
 })
 
 const EventData = mongoose.model<EventDocument>('eventData',EventSchema)

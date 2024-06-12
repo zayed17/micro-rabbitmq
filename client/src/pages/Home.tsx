@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 import axios from 'axios';
 interface Event {
     title: string;
     date: string;
     location: string;
     description: string;
-    createdBy: string
+    createdBy: string,
+    booked:boolean
 }
 const Home = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,8 +55,21 @@ const Home = () => {
     const handleBookEvent = async(event :Event)=>{
         try {
             const response = await axios.post('http://localhost:3001/event/booking', event, { withCredentials: true });
+            if (response.data.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Event Booked Successfully!',
+                    text: 'Thank you for booking the event.',
+                    confirmButtonText: 'OK'
+                });
+            }
         } catch (error) {
-            console.log(error)
+            console.log(error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'An error occurred while booking the event. Please try again later.'
+            });
         }
     }
 
@@ -124,25 +139,43 @@ const Home = () => {
                     </div>
                 </div>
             )}
-            <div className="mt-8 flex flex-col items-center">
-                <h2 className="text-2xl text-white font-semibold mb-4 text-center">Events</h2>
-                <ul className="w-full max-w-3xl">
-                    {events.map((event, index) => (
-                        <li key={index} className="border rounded-lg p-4 mb-4 bg-white dark:bg-gray-800 shadow-md w-full">
-                            <h3 className="text-lg text-gray-900 dark:text-white font-semibold">Title: {event.title}</h3>
-                            <p className="text-gray-400">Date: {event.date}</p>
-                            <p className="text-gray-400">Location: {event.location}</p>
-                            <p className="text-gray-400">Description: {event.description}</p>
-                            <p className="text-gray-400">CreatedBy: {event.createdBy}</p>
-                            <p>
-                            <button onClick={()=>handleBookEvent(event)} className="bg-blue-600 text-white font-semibold py-2 px-4 rounded ">
-                                Book Now
-                            </button>
-                            </p> 
-                        </li>
-                    ))}
-                </ul>
-            </div>
+           <div className="mt-8 flex flex-col items-center">
+    <h2 className="text-2xl text-white font-semibold mb-4 text-center">Events</h2>
+    <ul className="w-full max-w-3xl">
+        {events.map((event, index) => (
+            <li key={index} className="border rounded-lg p-4 mb-4 bg-white dark:bg-gray-800 shadow-md w-full relative">
+                {event.booked && (
+                    <svg
+                        className="absolute top-0 right-0 w-6 h-6 text-green-500 mr-2 mt-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                )}
+                <h3 className="text-lg text-gray-900 dark:text-white font-semibold">Title: {event.title}</h3>
+                <p className="text-gray-400">Date: {event.date}</p>
+                <p className="text-gray-400">Location: {event.location}</p>
+                <p className="text-gray-400">Description: {event.description}</p>
+                <p className="text-gray-400">CreatedBy: {event.createdBy}</p>
+                <p>
+                    <button
+                        disabled={event.booked ? true : false}
+                        onClick={() => handleBookEvent(event)}
+                        className={`bg-blue-600 text-white font-semibold py-2 px-4 rounded flex items-center ${event.booked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        {event.booked ? 'Booked' : 'Book Now'}
+                    </button>
+                </p>
+            </li>
+        ))}
+    </ul>
+</div>
+
+
+
         </section>
     );
 };
